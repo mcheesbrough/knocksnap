@@ -20,8 +20,9 @@ requirejs.config({
         models: 'models',
         components: 'components',
         domReady: 'lib/domReady',
-        text: 'lib/text'
-
+        text: 'lib/text',
+        knocksnap: 'knocksnap/knocksnap',
+        'knocksnap/models': 'knocksnap/models'
     },
     shim: {
     bootstrap: {
