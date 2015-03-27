@@ -1,4 +1,4 @@
-﻿define(['jquery', 'knockout', 'knockstrap', 'helpers', 'text!components/componentOne.html'], function ($, ko, ks, helpers, htmlString) {
+﻿define(['jquery', 'knockout', 'text!components/componentOne.html'], function ($, ko, htmlString) {
 
     function componentOneViewModel(params) {
         var self = this;

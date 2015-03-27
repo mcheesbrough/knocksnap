@@ -32,9 +32,9 @@ define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/model
             var grid = new Grid(element, gridOptions);
 
             $.each(gridComponents, function (index, item) {
-               grid.addComponent(item);
+                grid.addComponent(item);
+                grid.drawComponent(item);
             });
-
             grid.highlightEmptyCells();
 
             ko.utils.domData.set(element, 'gridComponents', gridComponents);
