@@ -1,19 +1,37 @@
-define(['jquery', 'knockout', 'knocksnap/models/cell.model'], function ($, ko, Cell) {
-    return function Grid(element, options) {
+define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/position.model'], function ($, ko, Cell, Position) {
+    return function Grid(element, components, options) {
         var self = this;
 
+        self.options = options;
+        self.components = [];
+        $.each(components, function(index, item) {
+            self.components.push(item);
+        });
 
-        var gridDivWidth = $(element).width();
 
         self.element = element;
-        self.width = Math.floor((gridDivWidth + options.spacing)/(options.minCellWidth + options.spacing));
-        self.height = options.minRows;
-        self.cellWidth = Math.floor((gridDivWidth - options.spacing * (self.width - 1)) / self.width);
-        self.cellHeight = options.cellHeight;
-        self.spacing = options.spacing;
+        self.width = 0;
+        self.height = 0;
+        self.cellWidth = 0;
+        self.cellWidthPercent = 0;
+        self.cellHeight = 0;
+        self.spacing = 0;
+        self.spacingPercent = 0;
+        calculateGridParameters();
 
         self.cells = [];
         setUpCells();
+
+
+
+        self.draw = function() {
+            $(element).empty();
+            setUpCells();
+            $.each(self.components, function(index, item) {
+                self.drawComponent(item);
+            });
+            self.highlightEmptyCells();
+        }
 
         self.highlightEmptyCells = function () {
             // Create empty divs
@@ -24,9 +42,9 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model'], function ($, ko, C
             for (var x=0; x<self.cells.length; x++) {
                 for (var y=0; y<self.cells[x].length; y++) {
                     if (self.cells[x][y].isEmpty()) {
-                        var top = y * self.cellHeight + y * self.spacing;
-                        var left = x * self.cellWidth + x * self.spacing;
-                        $(self.element).append('<div class="ks-grid-cell" style="position:absolute; width: ' + self.cellWidth + 'px; height: ' + self.cellHeight + 'px; top: ' + top + 'px; left: ' + left + 'px;"></div>');
+                        var newElement = renderElementRelative(new Position(y, x, 1, 1));
+                        newElement.addClass('ks-grid-cell');
+
                     }
                 }
             }
@@ -35,15 +53,71 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model'], function ($, ko, C
         self.drawComponent = function (gridComponent) {
             var isRegistered = ko.components.isRegistered(gridComponent.component);
             if (isRegistered) {
-                var top = gridComponent.position.top * self.cellHeight + gridComponent.position.top * self.spacing;
-                var left = gridComponent.position.left * self.cellWidth + gridComponent.position.left * self.spacing;
-                var width = gridComponent.position.width * self.cellWidth + (gridComponent.position.width -1 ) * self.spacing;
-                var height = gridComponent.position.height * self.cellHeight + (gridComponent.position.height - 1) * self.spacing;
-                $(self.element).append('<div style="position:absolute; width: ' + width + 'px; height: ' + height + 'px; top: ' + top + 'px; left: ' + left + 'px;" data-bind="component: \'' + gridComponent.component + '\'"></div>');
+                var newElement = renderElementRelative(gridComponent.position);
+                newElement.attr('data-bind', 'component: \'' + gridComponent.component + '\'');
             }
         }
 
-        self.addComponent = function(component) {
+        self.handleResize = function () {
+            // Check whether we need to adjust the number of cells
+            var currentWidth = calculateNumberOfCells();
+            if (currentWidth != self.width) {
+                calculateGridParameters();
+                self.draw();
+            }
+
+        }
+
+        function calculateGridParameters () {
+            var gridDivWidth = $(element).width();
+            self.width = calculateNumberOfCells();
+            self.height = self.options.minRows;
+            self.cellWidth = Math.floor((gridDivWidth - self.options.spacing * (self.width - 1)) / self.width);
+            self.cellWidthPercent = (self.cellWidth / gridDivWidth).toFixed(4) * 100;
+            self.cellHeight = self.options.cellHeight;
+            self.spacing = self.options.spacing;
+            self.spacingPercent = (self.options.spacing / gridDivWidth).toFixed(4) * 100;
+        }
+
+        function calculateNumberOfCells() {
+            var gridDivWidth = $(element).width();
+            return Math.floor((gridDivWidth + self.options.spacing)/(self.options.minCellWidth + self.options.spacing));
+        }
+
+        function renderElementAbsolute(position) {
+            var top = position.top * self.cellHeight + position.top * self.spacing;
+            var left = position.left * self.cellWidth + position.left * self.spacing;
+            var width = position.width * self.cellWidth + (position.width -1 ) * self.spacing;
+            var height = position.height * self.cellHeight + (position.height - 1) * self.spacing;
+
+            return renderElement(top + 'px', left + 'px', width + 'px', height + 'px');
+        }
+
+        function renderElementRelative(position) {
+            var top = position.top * self.cellHeight + position.top * self.spacing;
+            var left = position.left * self.cellWidthPercent + position.left * self.spacingPercent;
+            var width = position.width * self.cellWidthPercent + (position.width -1 ) * self.spacingPercent;
+            var height = position.height * self.cellHeight + (position.height - 1) * self.spacing;
+
+            return renderElement(top + 'px', left + '%', width + '%', height + 'px');
+
+        }
+
+        function renderElement(topString, leftString, widthString, heightString) {
+
+            var elementToAppend = $('<div style="position:absolute; width: ' + widthString + '; height: ' + heightString + '; top: ' + topString + '; left: ' + leftString + ';"></div>');
+            $(self.element).append(elementToAppend);
+            return elementToAppend;
+
+        }
+
+        self.addComponent = function (component) {
+            addComponent(component);
+        }
+
+        function addComponent (component) {
+
+
             var positionToUse = component.position;
             if (positionToUse.top == undefined || positionToUse.left == undefined) {
                 positionToUse = findNextPosition(component.preferredDimensions);
@@ -61,7 +135,8 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model'], function ($, ko, C
 
         }
 
-        function setUpCells(gridSpec) {
+
+        function setUpCells() {
 
             // Set up the grid
             self.cells = [];
@@ -71,6 +146,10 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model'], function ($, ko, C
                     self.cells[x].push(new Cell());
                 }
             }
+
+            $.each(self.components, function(index, item) {
+                addComponent(item);
+            });
         }
 
         function findNextPosition(preferredDimensions) {

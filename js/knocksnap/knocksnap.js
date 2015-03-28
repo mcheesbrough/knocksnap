@@ -23,19 +23,20 @@ define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/model
     ko.bindingHandlers.snapgrid = {
         init: function (element, valueAccessor) {
 
+
             var gridComponents = [];
             var parameters = ko.unwrap(valueAccessor());
             saveGridComponents(parameters, gridComponents);
 
             var gridOptions = new Options(parameters.options);
 
-            var grid = new Grid(element, gridOptions);
+            var grid = new Grid(element, gridComponents, gridOptions);
 
-            $.each(gridComponents, function (index, item) {
-                grid.addComponent(item);
-                grid.drawComponent(item);
+            $(window).resize( function () {
+                grid.handleResize();
             });
-            grid.highlightEmptyCells();
+
+            grid.draw();
 
             ko.utils.domData.set(element, 'gridComponents', gridComponents);
             ko.utils.domData.set(element, 'gridOptions', gridOptions);
