@@ -20,15 +20,22 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         calculateGridParameters();
 
         self.cells = [];
-        setUpCells();
+        layoutGrid();
 
-
-
-        self.draw = function() {
-            //$(element).empty();
-            setUpCells();
+        self.initialiseDom = function() {
+            $(element).empty();
+            layoutGrid();
             $.each(self.components, function(index, item) {
                 self.createComponentInDom(item);
+            });
+            self.highlightEmptyCells();
+        }
+
+        self.updateDom = function() {
+            $('.ks-grid-cell').remove();
+            layoutGrid();
+            $.each(self.components, function(index, item) {
+                self.updateComponentInDom(item);
             });
             self.highlightEmptyCells();
         }
@@ -64,8 +71,10 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         self.updateComponentInDom = function (gridComponent) {
             var isRegistered = ko.components.isRegistered(gridComponent.component);
             if (isRegistered) {
-                var position = getElementPositionRelative(gridComponent.position);
-                newElement.attr('data-bind', 'component: \'' + gridComponent.component + '\'');
+                if (gridComponent.element) {
+                    var position = getElementPositionRelative(gridComponent.position);
+                    positionElement(gridComponent, position);
+                }
             }
         }
 
@@ -74,7 +83,7 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             var currentWidth = calculateNumberOfCells();
             if (currentWidth != self.width) {
                 calculateGridParameters();
-                self.draw();
+                self.updateDom();
             }
 
         }
@@ -123,7 +132,7 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         }
 
         function positionElement(gridComponent, position) {
-            var elementToPosition = gridComponent.element;
+            var element = gridComponent.element;
             element.css('top', position.top);
             element.css('left', position.left);
             element.css('width', position.width);
@@ -156,7 +165,7 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         }
 
 
-        function setUpCells() {
+        function layoutGrid() {
 
             // Set up the grid
             self.cells = [];

@@ -36,7 +36,7 @@ define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/model
                 grid.handleResize();
             });
 
-            grid.draw();
+            grid.initialiseDom();
 
             ko.utils.domData.set(element, 'gridComponents', gridComponents);
             ko.utils.domData.set(element, 'gridOptions', gridOptions);
