@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Knocksnap Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="css/knocksnap.css" media="screen">
+    <link rel="stylesheet" href="css/knocksnap-demo.css" media="screen">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="bower_components/html5shiv/dist/html5shiv.min.js"></script>
+    <script src="bower_components/respond/dest/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- data-main attribute tells require.js to load-->
+    <script data-main="./js/pages/knocksnap-demo" src="js/lib/require.js"></script>
+
+</head>
+<body>
+<div class="container-fluid">
+    <navbar></navbar>
+
+<div data-bind="snapgrid: {components: [{component: 'component-two', position: {top: 0, left: 0, width: 6, height: 2}, sizeLimits: {minWidth: 2, maxWidth: 8, minHeight: 1, maxHeight: 3}},
+    {component: 'component-one', position: {top: 1, left: 6, width: 2, height: 1}, sizeLimits: {minWidth: 1, maxWidth: 2, minHeight: 1, maxHeight: 1}}],
+    options: {minCellWidth: 150, spacing: 2}}"></div>
+</div>
+
+
+</body>
+</html>
