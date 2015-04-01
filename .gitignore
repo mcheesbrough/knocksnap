@@ -1,0 +1,95 @@
+
+# Node Ignores #
+################
+node_modules/
+
+# IDEA Ignores #
+################
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+local.properties
+ 
+# Generic Android ignores #
+###########################
+bin/
+target
+gen/
+ 
+# Built Application Files
+###########################
+*.apk
+*.ap_
+ 
+# Files for the dex VM
+###########################
+*.dex
+ 
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+ 
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+ 
+# Logs and databases #
+######################
+log/
+*.log
+*.sql
+*.sqlite
+ 
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+ 
+# VCS #
+#######
+.svn
+.svn/
+CVS
+ 
+# XCode 5 #
+###########
+*.xcuserstate
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData
+!default.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+
+wdollar commented on 9 Mar 2014
+Thanks for taking the time to post this!
+
+Nemo64 commented on 19 Aug 2014
+nice, thanks!
+
+Write Preview Parsed as Markdown  Edit in fullscreen
+
+Comment
+Status API Blog About © 2015 GitHub, Inc. Terms Privacy Security Contact 

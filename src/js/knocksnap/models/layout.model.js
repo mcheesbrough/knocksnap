@@ -44,6 +44,31 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             }
         }
 
+        self.nearestSpaceAvailableToLeft = function (position) {
+
+            // First look left
+            var startColIndex = self.firstOccupiedColumnLeft(position.top, position.left, position.height);
+            var endColIndex = self.firstOccupiedColumnRight(position.top, startColIndex, position.height);
+
+            return endColIndex - startColIndex - 1;
+
+        }
+
+        self.firstOccupiedColumnLeft = function (top, left, height) {
+            if (left == 0) return -1;
+            var foundOccupiedCol = false;
+            for (var x = left - 1; x >= 0 && !foundOccupiedCol; x--) {
+                for (var y = top; y < top + height && !foundOccupiedCol; y++) {
+                    if (!gridCells[x][y].isEmpty()) {
+                        foundOccupiedCol = true;
+                        break;
+                    }
+                }
+                if (foundOccupiedCol) break;
+            }
+            return x;
+        }
+
         /*** Private members ***/
 
         function initialiseGrid() {

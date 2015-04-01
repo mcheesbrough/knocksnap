@@ -2,7 +2,12 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
     return function LayoutGridStrategy(gridToLayout, componentsToLayout) {
         var self = this;
         var grid = new Layout(gridToLayout.width, gridToLayout.height);
-        var components = componentsToLayout;
+        var components = componentsToLayout
+        components.sort(function (a, b) {
+            var ap = a.preferredPosition;
+            var bp = b.preferredPosition;
+            return ap.top > bp.top ? 1 : (ap.top < bp.top ? -1 : ap.left - bp.left);
+        });
 
         // Execute is called to lay the grid out as closely as possible to the preferred positions of all the components currently added to the grid
         // Will set the position property of each component to the new position to be used by the grid
@@ -29,6 +34,27 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
             return allComponentsPlaced;
         }
 
+        // Look for opportunities to remove white space between components
+        function shuffleUp() {
+            var allComponentsPlaced = true;
+
+            for (var i = 0; i < components.length; i++) {
+                var component = components[i];
+                if (!component.hasPosition()) {
+                    // How much space do we need?
+
+                    // How much possible space is there based on positions of placed components and preferred widths of non-placed components
+
+                    // Get components in same row(s) either because they are placed in row or because they are not placed but prefer to be in row
+                    var componentsInRow = getComponentsInSameRow(component);
+                    // Now iterate over components in row and shuffle if possible
+
+                }
+
+            }
+            return allComponentsPlaced;
+        }
+
         function tryFitUnplaced() {
             var allComponentsPlaced = true;
             for (var i = 0; i < components.length; i++) {
@@ -41,7 +67,6 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                         allComponentsPlaced = false
                     }
                 }
-
             }
             return allComponentsPlaced;
         }
@@ -73,8 +98,38 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                     }
                 }
             }
-
             return null;
+        }
+
+        function getComponentsInSameRow(component) {
+            var firstRow = component.preferredPosition.top;
+            var lastRow = component.preferredPosition.top + component.preferredPosition.height - 1;
+
+            // Find the components that have part of them in line with the component in question
+            var componentsInRow = [];
+            for (var i = 0; i < components.length; i++) {
+                var component = components[i];
+                if (component.hasPosition() && positionLiesInRowRange(firstRow, lastRow, component.position)) {
+                    componentsInRow.push(component);
+                } else if (positionLiesInRowRange(firstRow, lastRow, component.preferredPosition)) {
+                    componentsInRow.push(component);
+                }
+            }
+
+            return componentsInRow;
+        }
+
+        function positionLiesInRowRange(firstRow, lastRow, position) {
+            return position.top <= lastRow && (position.top + position.height) >= firstRow;
+        }
+
+        function extraSpaceNeededForPosition(position) {
+
+            var startColIndex = grid.firstOccupiedColumnLeft(position.top, position.left, position.height);
+            var endColIndex = grid.firstOccupiedColumnRight(position.top, colIndex, position.height);
+
+            availableWidth = endColIndex - startColIndex - 1;
+
         }
     }
 
