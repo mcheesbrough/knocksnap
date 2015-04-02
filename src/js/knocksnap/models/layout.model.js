@@ -33,24 +33,42 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             return true;
         }
 
-        self.addComponent = function (componentName, position) {
+        self.addComponent = function (component, position) {
             var positionToUse = position;
 
             for (var x=positionToUse.left; x<positionToUse.left + positionToUse.width; x++) {
                 for (var y=positionToUse.top; y<positionToUse.top + positionToUse.height; y++) {
                     if (!gridCells[x][y].isEmpty()) throw "Tried to put a component in an occupied cell";
-                    gridCells[x][y].content = componentName;
+                    gridCells[x][y].content = component;
                 }
             }
         }
 
-        self.nearestSpaceAvailableToLeft = function (position) {
+        self.getComponentsInSameRow = function (component) {
+            var firstRow = component.preferredPosition.top;
+            var lastRow = component.preferredPosition.top + component.preferredPosition.height - 1;
 
-            // First look left
-            var startColIndex = self.firstOccupiedColumnLeft(position.top, position.left, position.height);
-            var endColIndex = self.firstOccupiedColumnRight(position.top, startColIndex, position.height);
+            // Find the components that have part of them in line with the component in question
+            var componentsInRow = [];
+            for (var i = 0; i < components.length; i++) {
+                var component = components[i];
+                if (component.hasPosition() && positionLiesInRowRange(firstRow, lastRow, component.position)) {
+                    componentsInRow.push(component);
+                } else if (positionLiesInRowRange(firstRow, lastRow, component.preferredPosition)) {
+                    componentsInRow.push(component);
+                }
+            }
 
-            return endColIndex - startColIndex - 1;
+            return componentsInRow;
+        }
+
+
+        self.findGapsToTheLeft = function (component) {
+
+            var gaps = [];
+            var componentsInRow = self.getComponentsInSameRow(component); // We assume they are ordered
+
+
 
         }
 
@@ -85,6 +103,9 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         }
 
 
+        function positionLiesInRowRange(firstRow, lastRow, position) {
+            return position.top <= lastRow && (position.top + position.height) >= firstRow;
+        }
 
     }
 

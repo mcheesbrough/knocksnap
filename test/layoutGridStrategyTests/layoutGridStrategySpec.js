@@ -104,7 +104,7 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 0, 2, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 3, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 8, 2, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(0, 8, 2, 1));
 
                 });
                 it("shuffles the middle component and the rightmost component to the left because there is more space to the left of the middle component", function () {
@@ -115,7 +115,7 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 0, 2, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 5, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 8, 2, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(0, 8, 2, 1));
 
                 });
                 it("shuffles all components to the left one space because they all have equal space to the left", function () {
@@ -126,7 +126,7 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 0, 4, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 5, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 8, 2, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(0, 8, 2, 1));
 
                 });
 
@@ -138,7 +138,19 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 3, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 6, 4, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(0, 6, 4, 1));
+
+                });
+
+                it("shuffles to use up all available space when there is only one gap and the preferred widths fit exactly", function () {
+                    var components = [getAComponent(0,0,5,1), getAComponent(0,6,2,1,1,2,1,1), getAComponent(0,9,5,1)];
+
+                    var layoutStrategy = new LayoutStrategy(gridDimensions, components);
+                    layoutStrategy.execute();
+
+                    expect(components[0].getPosition()).toEqual(new Position(0, 0, 5, 1));
+                    expect(components[1].getPosition()).toEqual(new Position(0, 5, 5, 1));
+
 
                 });
 
@@ -150,7 +162,7 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 3, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 5, 5, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(0, 5, 5, 1));
 
                 });
 
@@ -162,7 +174,7 @@ define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap
 
                     expect(components[0].getPosition()).toEqual(new Position(0, 2, 3, 1));
                     expect(components[1].getPosition()).toEqual(new Position(0, 6, 2, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(1, 0, 6, 1));
+                    expect(components[2].getPosition()).toEqual(new Position(1, 0, 6, 1));
 
                 });
             });
