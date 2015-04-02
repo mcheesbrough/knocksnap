@@ -26,7 +26,7 @@ require.config({
         text: 'src/js/lib/text',
         knocksnap: 'src/js/knocksnap/knocksnap',
         'knocksnap/models': 'src/js/knocksnap/models',
-        'findNextPositionStrategy': 'src/js/knocksnap/strategies/findNextPositionStrategy'
+        'findNextPositionStrategy': 'src/js/knocksnap/strategies/layoutGridStrategy'
     },
     // dynamically load all test files
     deps: allTestFiles,

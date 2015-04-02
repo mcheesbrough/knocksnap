@@ -1,4 +1,4 @@
-define(['findNextPositionStrategy', 'knocksnap/models/options.model', 'knocksnap/models/grid.model', 'knocksnap/models/position.model', 'knocksnap/models/gridComponent.model'], function(LayoutStrategy, Options, Grid, Position, GridComponent) {
+define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/models/grid.model', 'knocksnap/models/position.model', 'knocksnap/models/gridComponent.model'], function(LayoutStrategy, Options, Grid, Position, GridComponent) {
     describe("For a new grid 10 x 5 wide, the layout strategy", function () {
         var componentId;
         var gridDimensions = {width: 10, height: 5};

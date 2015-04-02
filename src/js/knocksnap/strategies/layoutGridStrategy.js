@@ -31,14 +31,14 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
         }
 
         // Look for opportunities to remove white space between components
-        function shuffleUp() {
+        function shuffleAlong() {
             var allComponentsPlaced = true;
 
             for (var i = 0; i < components.length; i++) {
                 var component = components[i];
                 if (!component.hasPosition()) {
                     // How much space do we need?
-
+                    layout.spaceNeededToFit(component);
                     // How much possible space is there based on positions of placed components and preferred widths of non-placed components
 
                     // Get components in same row(s) either because they are placed in row or because they are not placed but prefer to be in row

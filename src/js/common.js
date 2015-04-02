@@ -23,7 +23,7 @@ requirejs.config({
         text: 'lib/text',
         knocksnap: 'knocksnap/knocksnap',
         'knocksnap/models': 'knocksnap/models',
-        'findNextPositionStrategy': 'knocksnap/strategies/findNextPositionStrategy'
+        'layoutGridStrategy': 'knocksnap/strategies/layoutGridStrategy'
     },
     shim: {
     bootstrap: {

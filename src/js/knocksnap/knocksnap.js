@@ -1,7 +1,7 @@
 /**
  * Created by martin on 24/03/15.
  */
-define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/models/gridComponent.model', 'knocksnap/models/grid.model', 'findNextPositionStrategy'], function ($, ko, Options, GridComponent, Grid, LayoutGridStrategy) {
+define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/models/gridComponent.model', 'knocksnap/models/grid.model', 'layoutGridStrategy'], function ($, ko, Options, GridComponent, Grid, LayoutGridStrategy) {
 
 
 
