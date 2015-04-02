@@ -35,6 +35,8 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
 
         self.addComponent = function (component, position) {
             var positionToUse = position;
+            if (positionToUse.left + positionToUse.width > self.width) throw 'Tried to place component outside right boundary';
+            if (positionToUse.top + positionToUse.height > self.height) throw 'Tried to place component outside bottom boundary';
 
             for (var x=positionToUse.left; x<positionToUse.left + positionToUse.width; x++) {
                 for (var y=positionToUse.top; y<positionToUse.top + positionToUse.height; y++) {
@@ -63,12 +65,13 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         }
 
 
-        self.findGapsToTheLeft = function (component) {
+        self.spaceNeededToFit = function (component) {
+            var positionToUse = component.position == undefined ? component.preferredPosition : component.position;
+            if (positionToUse.left + positionToUse.width > self.width) {
+                return positionToUse.left + positionToUse.width - self.width;
+            }
 
-            var gaps = [];
-            var componentsInRow = self.getComponentsInSameRow(component); // We assume they are ordered
-
-
+            throw "Not yet implemented";
 
         }
 

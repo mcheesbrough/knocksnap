@@ -82,9 +82,9 @@ define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model']
 
         describe("when finding out how much extra space a component needs to fit in its preferred row", function () {
             it("if all the component falls outside the grid it will be the preferred width plus distance from right side of grid", function () {
-                var components = [getAComponent(0, 11, 4, 1)];
-                var layout = createLayoutWithComponents(10, 5, components);
-                var result = layout.spaceNeededToFit(components[0]);
+
+                var layout = createLayoutWithComponents(10, 5);
+                var result = layout.spaceNeededToFit([getAComponent(0, 11, 4, 1)]);
                 expect(result).toEqual(6);
             });
             it("if the component is partially outside the grid then it will be the portion of width outside", function () {
