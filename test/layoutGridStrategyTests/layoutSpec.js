@@ -81,16 +81,21 @@ define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model']
         });
 
         describe("when finding out how much extra space a component needs to fit in its preferred row", function () {
+            it("if the component can be placed then space to move is 0", function () {
+
+                var layout = createLayoutWithComponents(10, 5);
+                var result = layout.spaceNeededToFit(getAComponent(0, 5, 4, 1));
+                expect(result).toEqual(0);
+            });
             it("if all the component falls outside the grid it will be the preferred width plus distance from right side of grid", function () {
 
                 var layout = createLayoutWithComponents(10, 5);
-                var result = layout.spaceNeededToFit([getAComponent(0, 11, 4, 1)]);
-                expect(result).toEqual(6);
+                var result = layout.spaceNeededToFit(getAComponent(0, 11, 4, 1));
+                expect(result).toEqual(5);
             });
             it("if the component is partially outside the grid then it will be the portion of width outside", function () {
-                var components = [getAComponent(0, 8, 4, 1)];
-                var layout = createLayoutWithComponents(10, 5, components);
-                var result = layout.spaceNeededToFit(components[0]);
+                var layout = createLayoutWithComponents(10, 5);
+                var result = layout.spaceNeededToFit(getAComponent(0, 8, 4, 1));
                 expect(result).toEqual(2);
             });
             it("if the component is inside grid but another component is in the way then it will be the space needed to clear the component", function () {

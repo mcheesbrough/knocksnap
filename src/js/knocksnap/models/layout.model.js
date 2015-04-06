@@ -66,11 +66,21 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
 
 
         self.spaceNeededToFit = function (component) {
+
             var positionToUse = component.position == undefined ? component.preferredPosition : component.position;
+            if (self.canPlaceAt(positionToUse)) return 0;
             if (positionToUse.left + positionToUse.width > self.width) {
                 return positionToUse.left + positionToUse.width - self.width;
             }
+            var furtherstLeft = -1;
+            for (var x = positionToUse.left; x < positionToUse.left + positionToUse.width; x++) {
+                for (var y = 0; y < positionToUse.top + positionToUse.height; y++) {
+                    
 
+                }
+                var obj = height[x];
+
+            }
             throw "Not yet implemented";
 
         }
@@ -109,6 +119,8 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         function positionLiesInRowRange(firstRow, lastRow, position) {
             return position.top <= lastRow && (position.top + position.height) >= firstRow;
         }
+
+
 
     }
 
