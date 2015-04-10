@@ -179,7 +179,7 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 });
             });
 
-            describe("in cases where components won't fit in preferred positions and there is no space to shuffle but components can be shrunk", function () {
+            xdescribe("in cases where components won't fit in preferred positions and there is no space to shuffle but components can be shrunk", function () {
 
                 it("puts a second component next to first if they overlap and shrinks the first if it won't fit otherwise", function () {
                     var components = [getAComponent(0,0,9,2,7,9,2,2), getAComponent(0,1,2,1,2,3,1,1)];

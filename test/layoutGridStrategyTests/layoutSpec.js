@@ -80,33 +80,39 @@ define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model']
             });
         });
 
-        describe("when finding out how much extra space a component needs to fit in its preferred row", function () {
+        describe("when finding out how far we need to shift left a component to make it fit in its preferred row", function () {
             it("if the component can be placed then space to move is 0", function () {
 
                 var layout = createLayoutWithComponents(10, 5);
-                var result = layout.spaceNeededToFit(getAComponent(0, 5, 4, 1));
+                var result = layout.leftShiftNeededToFit(getAComponent(0, 5, 4, 1));
                 expect(result).toEqual(0);
             });
             it("if all the component falls outside the grid it will be the preferred width plus distance from right side of grid", function () {
 
                 var layout = createLayoutWithComponents(10, 5);
-                var result = layout.spaceNeededToFit(getAComponent(0, 11, 4, 1));
+                var result = layout.leftShiftNeededToFit(getAComponent(0, 11, 4, 1));
                 expect(result).toEqual(5);
             });
             it("if the component is partially outside the grid then it will be the portion of width outside", function () {
                 var layout = createLayoutWithComponents(10, 5);
-                var result = layout.spaceNeededToFit(getAComponent(0, 8, 4, 1));
+                var result = layout.leftShiftNeededToFit(getAComponent(0, 8, 4, 1));
                 expect(result).toEqual(2);
             });
             it("if the component is inside grid but another component is in the way then it will be the space needed to clear the component", function () {
                 var components = [getAComponent(0, 6, 4, 1)];
                 var layout = createLayoutWithComponents(10, 5, components);
-                var result = layout.spaceNeededToFit(getAComponent(0,3,4,1));
+                var result = layout.leftShiftNeededToFit(getAComponent(0,3,4,1));
                 expect(result).toEqual(1);
+            });
+            it("if the component is inside grid but another component is in the way and there isn't room to the left of the component we still return the result", function () {
+                var components = [getAComponent(0, 2, 4, 1)];
+                var layout = createLayoutWithComponents(10, 5, components);
+                var result = layout.leftShiftNeededToFit(getAComponent(0,3,4,1));
+                expect(result).toEqual(5);
             });
         });
 
-        describe("when finding the gaps in a row", function () {
+        xdescribe("when finding the gaps in a row", function () {
             it("will only return the gaps to the left of the position and identify the component on the left and right of the gap", function () {
                 var components = [getAComponent(0, 5, 1, 1), getAComponent(0, 8, 1, 1)];
                 var layout = createLayoutWithComponents(10, 5, components);
