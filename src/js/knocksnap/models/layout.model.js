@@ -20,8 +20,10 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         }
 
         self.canPlaceAt = function(positionToTry) {
+            if (!pointIsInGrid(positionToTry.left, positionToTry.top)) return false;
             if (positionToTry.left + positionToTry.width > self.gridCells.length) return false;
             if (positionToTry.top + positionToTry.height > self.gridCells[0].length) return false;
+
 
             for (var x = positionToTry.left; x < positionToTry.left + positionToTry.width; x++) {
                 for (var y = positionToTry.top; y < positionToTry.top + positionToTry.height; y++) {
@@ -33,17 +35,37 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             return true;
         }
 
-
         self.addComponent = function (component, position) {
             var positionToUse = position;
-            if (positionToUse.left + positionToUse.width > self.width) throw 'Tried to place component outside right boundary';
-            if (positionToUse.top + positionToUse.height > self.height) throw 'Tried to place component outside bottom boundary';
+            if (!self.canPlaceAt(position)) throw "Cannot place the component at this position"
 
             for (var x=positionToUse.left; x<positionToUse.left + positionToUse.width; x++) {
                 for (var y=positionToUse.top; y<positionToUse.top + positionToUse.height; y++) {
                     if (!self.gridCells[x][y].isEmpty()) throw "Tried to put a component in an occupied cell";
                     self.gridCells[x][y].content = component;
                 }
+            }
+        }
+
+        self.removeComponent = function (component) {
+
+            for (var x=0; x<width; x++) {
+                for (var y=0; y<height; y++) {
+                    if (self.gridCells[x][y].content === component) {
+                        self.gridCells[x][y].content = undefined;
+                    }
+                }
+            }
+        }
+
+        self.moveComponent = function (component, position) {
+            var oldPosition = component.getPosition();
+            self.removeComponent(component);
+            try {
+                self.addComponent(component, position);
+            } catch (ex) {
+                self.addComponent(component, oldPosition);
+                throw "Could not move position";
             }
         }
 
@@ -74,7 +96,7 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
 
         self.leftShiftNeededToFit = function (component) {
 
-            var positionToUse = component.position == undefined ? component.preferredPosition : component.position;
+            var positionToUse = !component.hasPosition() ? component.preferredPosition : component.getPosition();
             if (self.canPlaceAt(positionToUse)) return 0;
             if (positionToUse.left + positionToUse.width > self.width) {
                 return positionToUse.left + positionToUse.width - self.width;
@@ -112,6 +134,29 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             return x;
         }
 
+        self.gapToLeftOfPosition = function (top, left, height) {
+            var firstOccupiedColumnLeft = self.firstOccupiedColumnLeft(top, left, height);
+            if (firstOccupiedColumnLeft == -1) return left;
+            return left - firstOccupiedColumnLeft - 1;
+        }
+
+        self.firstComponentToLeft = function (top, left, height) {
+            if (left == 0) return [];
+            var foundOccupiedCol = false;
+            var results = [];
+            for (var x = left - 1; x >= 0 && !foundOccupiedCol; x--) {
+                for (var y = top; y < top + height; y++) {
+                    if (!self.gridCells[x][y].isEmpty()) {
+                        foundOccupiedCol = true;
+                        if (results.indexOf(self.gridCells[x][y].content) == -1) {
+                            results.push(self.gridCells[x][y].content);
+                        }
+                    }
+                }
+                if (foundOccupiedCol) break;
+            }
+            return results;
+        }
         /*** Private members ***/
 
         function initialiseGrid() {

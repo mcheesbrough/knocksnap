@@ -3,7 +3,7 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
         var self = this;
         var layout = new Layout(gridToLayout.width, gridToLayout.height);
         var components = componentsToLayout
-        components.sort(GridComponent.sortByPreferredPosition);
+        components.sort(GridComponent.sortByPreferredPositionYFirst);
 
         // Execute is called to lay the grid out as closely as possible to the preferred positions of all the components currently added to the grid
         // Will set the position property of each component to the new position to be used by the grid
@@ -44,18 +44,27 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                     if (component.preferredPosition.left - leftShiftNeeded < 0) {
                         allComponentsPlaced = false;
                         continue;
-                    }; // Not enough space
+                    }; // Would go out of bounds
                     var positionToTry = component.preferredPosition;
-                    var spaceToLeft = layout.firstOccupiedColumnLeft(positionToTry.top, positionToTry.left, positionToTry.height);
+                    var spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
                     if (leftShiftNeeded <= spaceToLeft) {
                         component.setPosition(new Position(positionToTry.top, positionToTry.left - leftShiftNeeded, positionToTry.width, positionToTry.height), layout);
+                        continue;
                     }
-                    // How much possible space is there based on positions of placed components and preferred widths of non-placed components
-
-                    // Get components in same row(s) either because they are placed in row or because they are not placed but prefer to be in row
-                    //var componentsInRow = layout.getComponentsInSameRow(component);
-                    // Now iterate over components in row and shuffle if possible
-
+                    // Move as much as we can and try and move component to left, recursively
+                    var componentsToLeft = layout.firstComponentToLeft(positionToTry.top, positionToTry.left, positionToTry.height);
+                    var spaceNeeded = leftShiftNeeded - spaceToLeft
+                    var allComponentsToLeftShifted = true;
+                    for (var j = 0; j < componentsToLeft.length; j++) {
+                        if (!shuffleComponentToLeft(componentsToLeft[j], spaceNeeded)) {
+                            allComponentsToLeftShifted = false;
+                        }
+                    }
+                    if (allComponentsToLeftShifted) {
+                        component.setPosition(new Position(positionToTry.top, positionToTry.left - leftShiftNeeded, positionToTry.width, positionToTry.height), layout);
+                    } else {
+                        allComponentsPlaced = false;
+                    }
                 }
 
             }
@@ -117,6 +126,34 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
 
             availableWidth = endColIndex - startColIndex - 1;
 
+        }
+
+        function shuffleComponentToLeft(component, shiftNeeded) {
+            if (shiftNeeded <= 0) return;
+            // Get next component
+            var currentPosition = component.getPosition();
+            // TODO Fix this MART!!
+            var spaceAvailable = layout.gapToLeftOfPosition(currentPosition.top, currentPosition.left, currentPosition.height);
+            if (spaceAvailable >= shiftNeeded) {
+                component.move(shiftNeeded * -1, 0, layout);
+                return true;
+            }
+            // Not enough space so find more components to left and recurse
+            var componentsToLeft = layout.firstComponentToLeft(currentPosition.top, currentPosition.left, currentPosition.height);
+            if (!componentsToLeft || componentsToLeft.length == 0) return false; // No more components to shuffle
+
+            var additionalSpaceNeeded = shiftNeeded - spaceAvailable;
+            var allComponentsToLeftShifted = true;
+            for (var i = 0; i < componentsToLeft.length; i++) {
+                if (!shuffleComponentToLeft(componentsToLeft[i], additionalSpaceNeeded)) {
+                    allComponentsToLeftShifted = false;
+                }
+            }
+            if (allComponentsToLeftShifted) {
+                component.move(shiftNeeded * -1, 0, layout);
+                return true;
+            }
+            return false;
         }
     }
 

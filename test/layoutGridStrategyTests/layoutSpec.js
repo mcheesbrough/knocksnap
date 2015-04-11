@@ -1,4 +1,4 @@
-define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model'], function(Layout, GridComponent) {
+define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model', 'knocksnap/models/position.model'], function(Layout, GridComponent, Position) {
     describe("A layout", function () {
         var componentId;
 
@@ -25,6 +25,70 @@ define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model']
                 expect(layout.cellAt(2,3).content).not.toBeDefined();
 
                 components[0].setPosition(components[0].preferredPosition, layout);
+
+                expect(layout.cellAt(0,0).content).not.toBeDefined();
+                expect(layout.cellAt(1,0).content).toBe(components[0]);
+                expect(layout.cellAt(2,0).content).toBe(components[0]);
+                expect(layout.cellAt(3,0).content).not.toBeDefined();
+                expect(layout.cellAt(0,1).content).not.toBeDefined();
+                expect(layout.cellAt(1,1).content).toBe(components[0]);
+                expect(layout.cellAt(2,1).content).toBe(components[0]);
+                expect(layout.cellAt(3,1).content).not.toBeDefined();
+                expect(layout.cellAt(0,2).content).not.toBeDefined();
+                expect(layout.cellAt(1,2).content).not.toBeDefined();
+                expect(layout.cellAt(2,2).content).not.toBeDefined();
+                expect(layout.cellAt(3,2).content).not.toBeDefined();
+            });
+        });
+
+        describe("when moving a component", function () {
+            it("the position is changed and the grid cells updated", function () {
+                var components = [getAComponent(0, 1, 2, 2)];
+                var layout = createLayoutWithComponents(10, 5);
+
+                components[0].setPosition(components[0].preferredPosition, layout);
+
+                expect(layout.cellAt(0,0).content).not.toBeDefined();
+                expect(layout.cellAt(1,0).content).toBe(components[0]);
+                expect(layout.cellAt(2,0).content).toBe(components[0]);
+                expect(layout.cellAt(3,0).content).not.toBeDefined();
+                expect(layout.cellAt(0,1).content).not.toBeDefined();
+                expect(layout.cellAt(1,1).content).toBe(components[0]);
+                expect(layout.cellAt(2,1).content).toBe(components[0]);
+                expect(layout.cellAt(3,1).content).not.toBeDefined();
+                expect(layout.cellAt(0,2).content).not.toBeDefined();
+                expect(layout.cellAt(1,2).content).not.toBeDefined();
+                expect(layout.cellAt(2,2).content).not.toBeDefined();
+                expect(layout.cellAt(3,2).content).not.toBeDefined();
+
+
+                components[0].move(-1, 1, layout);
+
+                expect(components[0].getPosition()).toEqual(new Position(1,0,2,2));
+
+                expect(layout.cellAt(0,0).content).not.toBeDefined();
+                expect(layout.cellAt(1,0).content).not.toBeDefined();
+                expect(layout.cellAt(2,0).content).not.toBeDefined();
+                expect(layout.cellAt(3,0).content).not.toBeDefined();
+                expect(layout.cellAt(0,1).content).toBe(components[0]);
+                expect(layout.cellAt(1,1).content).toBe(components[0]);
+                expect(layout.cellAt(2,1).content).not.toBeDefined();
+                expect(layout.cellAt(3,1).content).not.toBeDefined();
+                expect(layout.cellAt(0,2).content).toBe(components[0]);
+                expect(layout.cellAt(1,2).content).toBe(components[0]);
+                expect(layout.cellAt(2,2).content).not.toBeDefined();
+                expect(layout.cellAt(3,2).content).not.toBeDefined();
+            });
+
+            it("if we try to move to an invalid position then the position is not changed and the grid stays the same", function () {
+                var components = [getAComponent(0, 1, 2, 2)];
+                var layout = createLayoutWithComponents(10, 5);
+
+                components[0].setPosition(components[0].preferredPosition, layout);
+
+                components[0].move(-2, 1, layout);
+
+                expect(components[0].getPosition()).toEqual(new Position(0,1,2,2));
 
                 expect(layout.cellAt(0,0).content).not.toBeDefined();
                 expect(layout.cellAt(1,0).content).toBe(components[0]);
@@ -77,6 +141,34 @@ define(['knocksnap/models/layout.model', 'knocksnap/models/gridComponent.model']
                 var layout = createLayoutWithComponents(10, 5, components);
                 var result = layout.firstOccupiedColumnLeft(1,8,2);
                 expect(result).toEqual(2);
+            });
+        });
+
+        describe("when looking for the first component to the left", function () {
+            it("will return empty list if there isn't one", function () {
+                var layout = createLayoutWithComponents(10, 5);
+                var result = layout.firstComponentToLeft(0,0,1);
+                expect(result.length).toBe(0);
+            });
+
+            it("will return undefined if we start looking at column 2 and there are no components", function () {
+                var layout = createLayoutWithComponents(10, 5);
+                var result = layout.firstComponentToLeft(0,2,1);
+                expect(result.length).toBe(0);
+            });
+            it("will return one component if we find one and only one", function () {
+                var components = [getAComponent(0, 1, 1, 1)];
+                var layout = createLayoutWithComponents(10, 5, components);
+                var result = layout.firstComponentToLeft(0,4,1);
+                expect(result.length).toBe(1);
+                expect(result[0]).toBe(components[0]);
+            });
+            it("will return two components if we find them both at same column", function () {
+                var components = [getAComponent(0, 1, 1, 1), getAComponent(2, 0, 2, 2)];
+                var layout = createLayoutWithComponents(10, 5, components);
+                var result = layout.firstComponentToLeft(0,3,4);
+                expect(result.length).toBe(2);
+                expect(result).toEqual([components[0], components[1]]);
             });
         });
 
