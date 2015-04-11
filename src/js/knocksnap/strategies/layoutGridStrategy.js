@@ -134,26 +134,24 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
             var currentPosition = component.getPosition();
             // TODO Fix this MART!!
             var spaceAvailable = layout.gapToLeftOfPosition(currentPosition.top, currentPosition.left, currentPosition.height);
-            if (spaceAvailable >= shiftNeeded) {
-                component.move(shiftNeeded * -1, 0, layout);
-                return true;
-            }
-            // Not enough space so find more components to left and recurse
-            var componentsToLeft = layout.firstComponentToLeft(currentPosition.top, currentPosition.left, currentPosition.height);
-            if (!componentsToLeft || componentsToLeft.length == 0) return false; // No more components to shuffle
+            while (spaceAvailable < shiftNeeded) {
+                // Not enough space so find more components to left and recurse
+                var componentsToLeft = layout.firstComponentToLeft(currentPosition.top, currentPosition.left, currentPosition.height);
+                if (!componentsToLeft || componentsToLeft.length == 0) return false; // No more components to shuffle
 
-            var additionalSpaceNeeded = shiftNeeded - spaceAvailable;
-            var allComponentsToLeftShifted = true;
-            for (var i = 0; i < componentsToLeft.length; i++) {
-                if (!shuffleComponentToLeft(componentsToLeft[i], additionalSpaceNeeded)) {
-                    allComponentsToLeftShifted = false;
+                var additionalSpaceNeeded = shiftNeeded - spaceAvailable;
+                var allComponentsToLeftShifted = true;
+                for (var i = 0; i < componentsToLeft.length; i++) {
+                    if (!shuffleComponentToLeft(componentsToLeft[i], additionalSpaceNeeded)) {
+                        allComponentsToLeftShifted = false;
+                    }
                 }
+                if (!allComponentsToLeftShifted) return false;
+                // Recalculate space available and iterate again if necessary
+                var spaceAvailable = layout.gapToLeftOfPosition(currentPosition.top, currentPosition.left, currentPosition.height);
             }
-            if (allComponentsToLeftShifted) {
-                component.move(shiftNeeded * -1, 0, layout);
-                return true;
-            }
-            return false;
+            component.move(shiftNeeded * -1, 0, layout);
+            return true;
         }
     }
 

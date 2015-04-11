@@ -1,7 +1,7 @@
 define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/models/grid.model', 'knocksnap/models/position.model', 'knocksnap/models/gridComponent.model'], function(LayoutStrategy, Options, Grid, Position, GridComponent) {
     describe("For a new grid 10 x 5 wide, the layout strategy", function () {
         var componentId;
-        var gridDimensions = {width: 10, height: 5};
+        var gridDimensions = {width: 10, height: 10};
 
         beforeEach(function() {
             componentId = 0;
@@ -107,7 +107,7 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                     expect(components[2].getPosition()).toEqual(new Position(0, 8, 2, 1));
 
                 });
-                it("shuffles the middle component and the rightmost component to the left because ther eis no room to just move rightmost one", function () {
+                it("shuffles the middle component and the rightmost component to the left because there is no room to just move rightmost one", function () {
                     var components = [getAComponent(0,0,2,1), getAComponent(0,6,3,1,1,2,1,1), getAComponent(0,9,2,1)];
 
                     var layoutStrategy = new LayoutStrategy(gridDimensions, components);
@@ -168,7 +168,7 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
 
                 });
 
-                it("when there are knock-on effects on components in different rows they are moved too function", function() {
+                it("when there are knock-on effects on components in different rows they are moved too", function() {
                     var components = [getAComponent(0,1,4,2), getAComponent(0,6,2,1,1,2,1,1),
                         getAComponent(1,7,1,2), getAComponent(2,3,4,2), getAComponent(0,9,4,2)];
 
@@ -184,27 +184,21 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
 
                 });
 
-                xit("shuffles to use up all available space because preferred widths fit exactly", function () {
-                    var components = [getAComponent(0,2,3,1), getAComponent(0,6,2,1,1,2,1,1), getAComponent(0,9,5,1)];
+                it("when there are knock-on effects on components above and below they are moved too", function() {
+                    var components = [getAComponent(2,1,4,2), getAComponent(2,7,1,1,1,2,1,1),
+                        getAComponent(3,7,1,2), getAComponent(0,3,3,2), getAComponent(1,6,1,2),
+                        getAComponent(4,3,4,2), getAComponent(2,9,4,2)];
 
                     var layoutStrategy = new LayoutStrategy(gridDimensions, components);
                     layoutStrategy.execute();
 
-                    expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 3, 2, 1));
-                    expect(components[2].getPosition()).toEqual(new Position(0, 5, 5, 1));
-
-                });
-
-                xit("wraps rightmost component to new line because there isn't enough space and does no shuffle other components", function () {
-                    var components = [getAComponent(0,2,3,1), getAComponent(0,6,2,1,1,2,1,1), getAComponent(0,9,6,1)];
-
-                    var layoutStrategy = new LayoutStrategy(gridDimensions, components);
-                    layoutStrategy.execute();
-
-                    expect(components[0].getPosition()).toEqual(new Position(0, 2, 3, 1));
-                    expect(components[1].getPosition()).toEqual(new Position(0, 6, 2, 1));
-                    expect(components[2].getPosition()).toEqual(new Position(1, 0, 6, 1));
+                    expect(components[0].getPosition()).toEqual(new Position(2, 0, 4, 2));
+                    expect(components[1].getPosition()).toEqual(new Position(0, 1, 3, 2));
+                    expect(components[2].getPosition()).toEqual(new Position(4, 1, 4, 2));
+                    expect(components[3].getPosition()).toEqual(new Position(1, 4, 1, 2));
+                    expect(components[4].getPosition()).toEqual(new Position(2, 5, 1, 1));
+                    expect(components[5].getPosition()).toEqual(new Position(3, 5, 1, 2));
+                    expect(components[6].getPosition()).toEqual(new Position(2, 6, 4, 2));
 
                 });
             });
@@ -236,7 +230,7 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
             });
 
         });
-        xdescribe("in cases where the components are different heights but are in the same conceptual row", function () {
+        describe("in cases where the components are different heights but are in the same conceptual row", function () {
             it("fits two components onto a row but cannot fit the third so wraps to second row but alongside first component because it has depth 2", function () {
                 var components = [getAComponent(0,0,5,2,4,7,2,2), getAComponent(0,5,4,1,4,5,1,1), getAComponent(0,9,5,1,3,6,1,1)];
 
