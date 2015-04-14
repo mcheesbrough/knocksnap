@@ -14,9 +14,11 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
             if (tryPlacePreferred()) return;
             // Try and shuffle components into available space without shrinking
             if (shuffleAlong()) return;
+            // Now try shrinking and shuffling
+
             // Didn't work, so let's try finding the next possible position for any that didn't fit, but don't move any existing components
             if (tryFitUnplaced()) return;
-
+            return;
             throw "Layout strategy not implemented";
         }
 
@@ -44,7 +46,7 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                     if (component.preferredPosition.left - leftShiftNeeded < 0) {
                         allComponentsPlaced = false;
                         continue;
-                    }; // Would go out of bounds
+                    };
                     var positionToTry = component.preferredPosition;
                     var spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
                     if (leftShiftNeeded <= spaceToLeft) {
@@ -52,18 +54,57 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                         continue;
                     }
                     // Move as much as we can and try and move component to left, recursively
-                    var componentsToLeft = layout.firstComponentToLeft(positionToTry.top, positionToTry.left, positionToTry.height);
-                    var spaceNeeded = leftShiftNeeded - spaceToLeft
+                    var spaceNeeded = leftShiftNeeded - spaceToLeft;
+                    var possibleContraction = positionToTry.width - component.sizeLimits.minWidth;
                     var allComponentsToLeftShifted = true;
-                    for (var j = 0; j < componentsToLeft.length; j++) {
-                        if (!shuffleComponentToLeft(componentsToLeft[j], spaceNeeded)) {
-                            allComponentsToLeftShifted = false;
+                    while (spaceToLeft < leftShiftNeeded && allComponentsToLeftShifted) {
+                        var componentsToLeft = layout.firstComponentToLeft(positionToTry.top, positionToTry.left, positionToTry.height);
+
+                        allComponentsToLeftShifted = true;
+                        for (var j = 0; j < componentsToLeft.length; j++) {
+                            if (!shuffleComponentToLeft(componentsToLeft[j], spaceNeeded, possibleContraction)) {
+                                allComponentsToLeftShifted = false;
+                            }
                         }
+                        spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
+                        spaceNeeded = leftShiftNeeded - spaceToLeft;
                     }
-                    if (allComponentsToLeftShifted) {
+
+                    if (leftShiftNeeded <= spaceToLeft) {
                         component.setPosition(new Position(positionToTry.top, positionToTry.left - leftShiftNeeded, positionToTry.width, positionToTry.height), layout);
                     } else {
-                        allComponentsPlaced = false;
+                        // Now we can try to squeeze this component
+                        if (leftShiftNeeded <= spaceToLeft + possibleContraction) {
+                            component.setPosition(new Position(positionToTry.top, positionToTry.left - spaceToLeft, positionToTry.width - leftShiftNeeded + spaceToLeft, positionToTry.height), layout);
+
+                        } else { // Try to squeeze to left
+                            for (var j = 0; j < componentsToLeft.length; j++) {
+                                squeezeComponentToLeft(componentsToLeft[j], leftShiftNeeded - spaceToLeft - possibleContraction);
+                            }
+                            spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
+                            var spaceNeeded = leftShiftNeeded - spaceToLeft;
+
+                            if (leftShiftNeeded <= spaceToLeft) {
+                                component.setPosition(new Position(positionToTry.top, positionToTry.left - leftShiftNeeded, positionToTry.width, positionToTry.height), layout);
+                            } else {
+                                // And finally lets shuffle again
+                                for (var j = 0; j < componentsToLeft.length; j++) {
+                                    if (!shuffleComponentToLeft(componentsToLeft[j], spaceNeeded, leftShiftNeeded - spaceToLeft)) {
+                                        allComponentsToLeftShifted = false;
+                                    }
+                                }
+                                spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
+
+                                if (leftShiftNeeded <= spaceToLeft) {
+                                    component.setPosition(new Position(positionToTry.top, positionToTry.left - leftShiftNeeded, positionToTry.width, positionToTry.height), layout);
+                                } else if (leftShiftNeeded <= spaceToLeft + possibleContraction) {
+                                    component.setPosition(new Position(positionToTry.top, positionToTry.left - spaceToLeft, positionToTry.width - leftShiftNeeded + spaceToLeft, positionToTry.height), layout);
+
+                                } else {
+                                    allComponentsPlaced = false;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -118,40 +159,70 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
         }
 
 
-
-        function extraSpaceNeededForPosition(position) {
-
-            var startColIndex = layout.firstOccupiedColumnLeft(position.top, position.left, position.height);
-            var endColIndex = layout.firstOccupiedColumnRight(position.top, colIndex, position.height);
-
-            availableWidth = endColIndex - startColIndex - 1;
-
-        }
-
-        function shuffleComponentToLeft(component, shiftNeeded) {
-            if (shiftNeeded <= 0) return;
+        function shuffleComponentToLeft(component, shiftNeeded, possibleContractionOfPreviousComponents) {
+            if (shiftNeeded <= 0) return 0;
             // Get next component
             var currentPosition = component.getPosition();
-            // TODO Fix this MART!!
+            var possibleContraction = possibleContractionOfPreviousComponents + (currentPosition.width - component.sizeLimits.minWidth);
             var spaceAvailable = layout.gapToLeftOfPosition(currentPosition.top, currentPosition.left, currentPosition.height);
-            while (spaceAvailable < shiftNeeded) {
+            var allComponentsToLeftShifted = true;
+            while (spaceAvailable < shiftNeeded && allComponentsToLeftShifted) {
                 // Not enough space so find more components to left and recurse
                 var componentsToLeft = layout.firstComponentToLeft(currentPosition.top, currentPosition.left, currentPosition.height);
-                if (!componentsToLeft || componentsToLeft.length == 0) return false; // No more components to shuffle
+                if (!componentsToLeft || componentsToLeft.length == 0) break; // No more components to shuffle
 
                 var additionalSpaceNeeded = shiftNeeded - spaceAvailable;
-                var allComponentsToLeftShifted = true;
+                allComponentsToLeftShifted = true;
+
                 for (var i = 0; i < componentsToLeft.length; i++) {
-                    if (!shuffleComponentToLeft(componentsToLeft[i], additionalSpaceNeeded)) {
+                    if (!shuffleComponentToLeft(componentsToLeft[i], additionalSpaceNeeded, possibleContraction)) {
                         allComponentsToLeftShifted = false;
                     }
                 }
-                if (!allComponentsToLeftShifted) return false;
                 // Recalculate space available and iterate again if necessary
                 var spaceAvailable = layout.gapToLeftOfPosition(currentPosition.top, currentPosition.left, currentPosition.height);
             }
-            component.move(shiftNeeded * -1, 0, layout);
-            return true;
+
+            // Do we have space or not
+            if (spaceAvailable >= shiftNeeded) {
+                component.move(shiftNeeded * -1, 0, layout);
+                return true;
+            }
+            if (spaceAvailable + possibleContraction >= shiftNeeded) {
+                if (spaceAvailable > 0) {
+                    component.move(spaceAvailable * -1, 0, layout);
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        function squeezeComponentToLeft(component, squeezeNeeded) {
+            if (squeezeNeeded <= 0) return 0;
+            // Get next component
+            var currentPosition = component.getPosition();
+            var possibleContraction = currentPosition.width - component.sizeLimits.minWidth;
+            var smallestSqueeze = 0;
+            if (possibleContraction < squeezeNeeded) {
+                // Not enough squeezability so find more components to left and recurse
+                var componentsToLeft = layout.firstComponentToLeft(currentPosition.top, currentPosition.left, currentPosition.height);
+                if (componentsToLeft && componentsToLeft.length > 0) {
+                    var additionalSqueezeNeeded = squeezeNeeded - possibleContraction;
+                    for (var i = 0; i < componentsToLeft.length; i++) {
+                        var squeeze = squeezeComponentToLeft(componentsToLeft[i], additionalSqueezeNeeded);
+                        if ((squeeze > 0 && squeeze < smallestSqueeze) || smallestSqueeze == 0) {
+                            smallestSqueeze = squeeze;
+                        }
+                    }
+                }
+            }
+            // Do we have enough contraction or not
+            if (possibleContraction + smallestSqueeze >= squeezeNeeded) {
+                component.resize((squeezeNeeded - smallestSqueeze) * -1, 0, layout);
+                return squeezeNeeded;
+            }
+            return false;
         }
     }
 

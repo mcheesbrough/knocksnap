@@ -38,6 +38,21 @@ define(['jquery', 'knocksnap/models/position.model', 'knocksnap/models/Component
                 return;
             }
         }
+
+        self.resize = function (xChange, yChange, layout) {
+            if (position == undefined) return; // Can't move a component that has not been positioned
+            if (position.width + xChange > self.sizeLimits.maxWidth) return;
+            if (position.width + xChange < self.sizeLimits.minWidth) return;
+            if (position.height + yChange > self.sizeLimits.maxHeight) return;
+            if (position.height + yChange < self.sizeLimits.minHeight) return;
+            try {
+                var newPosition = new Position(position.top, position.left, position.width + xChange, position.height + yChange);
+                layout.moveComponent(self, newPosition);
+                position = newPosition;
+            } catch (ex) {
+                return;
+            }
+        }
     }
     GridComponent.sortByPreferredPositionXFirst = function (a, b) {
         var ap = a.preferredPosition;

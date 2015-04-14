@@ -122,7 +122,8 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         self.firstOccupiedColumnLeft = function (top, left, height) {
             if (left == 0) return -1;
             var foundOccupiedCol = false;
-            for (var x = left - 1; x >= 0 && !foundOccupiedCol; x--) {
+            var startX = left > self.gridCells.length ? self.gridCells.length - 1 : left - 1;
+            for (var x = startX; x >= 0 && !foundOccupiedCol; x--) {
                 for (var y = top; y < top + height && !foundOccupiedCol; y++) {
                     if (!self.gridCells[x][y].isEmpty()) {
                         foundOccupiedCol = true;
@@ -144,7 +145,8 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             if (left == 0) return [];
             var foundOccupiedCol = false;
             var results = [];
-            for (var x = left - 1; x >= 0 && !foundOccupiedCol; x--) {
+            var startX = left > self.gridCells.length ? self.gridCells.length - 1 : left - 1;
+            for (var x = startX; x >= 0 && !foundOccupiedCol; x--) {
                 for (var y = top; y < top + height; y++) {
                     if (!self.gridCells[x][y].isEmpty()) {
                         foundOccupiedCol = true;
