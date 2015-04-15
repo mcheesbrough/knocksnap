@@ -5,60 +5,46 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
         var parentElement = element;
         self.width = 0;
         self.height = 0;
+        self.layout = undefined;
         var cellWidth = 0;
         var cellWidthPercent = 0;
         var cellHeight = 0;
         var spacing = 0;
         var spacingPercent = 0;
-        var gridCells = [];
 
         var gridOptions = options;
-        var gridLayoutStrategy;
+        var GridLayoutStrategy;
+        self.layout = undefined;
         self.components = [];
         $.each(components, function(index, item) {
-            if (!item.preferredPosition) {
-                item.preferredPosition = item.position;
-            }
             self.components.push(item);
         });
 
         /*** Public members ***/
 
-        self.initialise = function (layoutStrategy) {
-            gridLayoutStrategy = layoutStrategy;
-            calculateGridParameters();
-            initialiseGrid();
+        self.initialise = function (LayoutStrategy) {
+            GridLayoutStrategy = LayoutStrategy;
+            setUpGrid();
             initialiseDom();
-        }
-
-        self.cellAt = function (x, y) {
-            return gridCells[x][y];
-        }
-        self.cellRows = function () {
-            return gridCells.length;
-        }
-        self.cellCols = function () {
-            return gridCells[0].length;
         }
 
         self.handleResize = function () {
             // Check whether we need to adjust the number of cells
             var currentWidth = calculateNumberOfCells();
             if (currentWidth != self.width) {
-                calculateGridParameters();
+                setUpGrid();
                 updateDom();
             }
         }
 
-        self.canPlaceComponent = function(position) {
-            return canPlaceComponent(position);
-        }
-
-        self.addComponent = function (component) {
-            addComponentToGrid(component);
-        }
-
         /*** Private members ***/
+
+        function setUpGrid() {
+            calculateGridParameters();
+            eraseComponentPositions(self.components);
+            var layoutStrategy = new GridLayoutStrategy({width: self.width, height: self.height}, self.components );
+            self.layout = layoutStrategy.execute();
+        }
 
         function calculateGridParameters () {
             var gridDivWidth = $(parentElement).width();
@@ -76,40 +62,22 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             return Math.floor((gridDivWidth + gridOptions.spacing)/(gridOptions.minCellWidth + gridOptions.spacing));
         }
 
-
-        function addComponentToGrid (component) {
-            var positionToUse = component.position;
-
-            for (var x=positionToUse.left; x<positionToUse.left + positionToUse.width; x++) {
-                for (var y=positionToUse.top; y<positionToUse.top + positionToUse.height; y++) {
-                    if (!gridCells[x][y].isEmpty()) throw "Tried to put a component in an occupied cell";
-                    gridCells[x][y].content = component.component;
-                }
+        function eraseComponentPositions(components) {
+            for (var i = 0; i < components.length; i++) {
+                var component = components[i];
+                component.deletePosition();
             }
-        }
-
-        function initialiseGrid() {
-
-            // Set up the grid
-            gridCells = [];
-            for (var x = 0; x < self.width; x++) {
-                gridCells.push([]);
-                for (var y = 0; y < self.height; y++) {
-                    gridCells[x].push(new Cell());
-                }
-            }
-
         }
 
         function initialiseDom() {
             $(parentElement).empty();
-            gridLayoutStrategy.execute();
+            //gridLayoutStrategy.execute();
             $.each(self.components, function(index, item) {
                 createComponentInDom(item);
                 /*placeComponent(item);*/
-                addComponentToGrid(gridComponent);
+                //addComponentToGrid(gridComponent);
 
-                updateComponentInDom(gridComponent);
+                updateComponentInDom(item);
             });
 
             highlightEmptyCells();
@@ -117,13 +85,13 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
 
         function updateDom () {
             $('.ks-grid-cell').remove();
-            initialiseGrid();
-            gridLayoutStrategy.execute();
+            //initialiseGrid();
+            //gridLayoutStrategy.execute();
 
             $.each(self.components, function(index, item) {
                 //placeComponent(item);
-                addComponentToGrid(gridComponent);
-                updateComponentInDom(gridComponent);
+                //addComponentToGrid(gridComponent);
+                updateComponentInDom(item);
             });
             highlightEmptyCells();
         }
@@ -134,13 +102,12 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             var gridElement = $(parentElement);
 
             gridElement.css('position', 'relative');
-            for (var x=0; x<gridCells.length; x++) {
-                for (var y=0; y<gridCells[x].length; y++) {
-                    if (gridCells[x][y].isEmpty()) {
+            for (var x=0; x<self.layout.cellRows(); x++) {
+                for (var y=0; y<self.layout.cellCols(); y++) {
+                    if (self.layout.cellAt(x, y).isEmpty()) {
                         var position = getElementPositionRelative(new Position(y, x, 1, 1));
                         var newElement = renderElement(position);
                         newElement.addClass('ks-grid-cell');
-
                     }
                 }
             }
@@ -160,54 +127,11 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             var isRegistered = ko.components.isRegistered(gridComponent.component);
             if (isRegistered) {
                 if (gridComponent.element) {
-                    var position = getElementPositionRelative(gridComponent.position);
+                    var position = getElementPositionRelative(gridComponent.position());
                     positionElement(gridComponent, position);
                 }
             }
         }
-
-
-/*        function placeComponent (gridComponent) {
-            if (!isPossibleToPlaceComponent(gridComponent)) return;
-
-            var preferredPosition = gridComponent.preferredPosition;
-            var foundPosition = true;
-            if (preferredPosition.top == undefined || preferredPosition.left == undefined) {
-                foundPosition = gridLayoutStrategy.execute(gridComponent);
-            }
-            if (!canPlaceComponent(gridComponent.preferredPosition)) {
-                foundPosition = gridLayoutStrategy.execute(gridComponent);
-            } else {
-                gridComponent.position = gridComponent.preferredPosition;
-            }
-
-
-            if (foundPosition) {
-                addComponentToGrid(gridComponent);
-
-                updateComponentInDom(gridComponent);
-            }
-        }*/
-
-        function isPossibleToPlaceComponent(gridComponent) {
-            return gridComponent.sizeLimits.minWidth <= self.width;
-        }
-
-        function canPlaceComponent(positionToTry) {
-            if (positionToTry.left + positionToTry.width > gridCells.length) return false;
-            if (positionToTry.top + positionToTry.height > gridCells[0].length) return false;
-
-            for (var x = positionToTry.left; x < positionToTry.left + positionToTry.width; x++) {
-                for (var y = positionToTry.top; y < positionToTry.top + positionToTry.height; y++) {
-                    if (!gridCells[x][y].isEmpty()) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-
 
         function getElementPositionAbsolute(position) {
             var top = position.top * cellHeight + position.top * spacing;

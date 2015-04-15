@@ -26,9 +26,7 @@ define(['jquery', 'knockout', 'knocksnap/models/options.model', 'knocksnap/model
             var gridOptions = new Options(parameters.options);
 
             var grid = new Grid(element, gridComponents, gridOptions);
-            var layoutStrategy = new LayoutGridStrategy(grid);
-            grid.initialise(layoutStrategy);
-
+            grid.initialise(LayoutGridStrategy);
             $(window).resize( function () {
                 grid.handleResize();
             });

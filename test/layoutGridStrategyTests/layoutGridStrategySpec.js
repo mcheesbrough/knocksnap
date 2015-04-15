@@ -28,8 +28,8 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 var layoutStrategy = new LayoutStrategy(gridDimensions, components);
                 layoutStrategy.execute();
 
-                expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 2));
-                expect(components[1].getPosition()).toEqual(new Position(0, 3, 1, 1));
+                expect(components[0].getPosition()).toEqual(new Position(0, 0, 1, 2));
+                expect(components[1].getPosition()).toEqual(new Position(0, 1, 1, 1));
             });
 
             it("puts a second component next to the first if they overlap ordered by preferred position", function () {
@@ -37,8 +37,8 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 var layoutStrategy = new LayoutStrategy(gridDimensions, components);
                 layoutStrategy.execute();
 
-                expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 2));
-                expect(components[1].getPosition()).toEqual(new Position(0, 3, 1, 1));
+                expect(components[0].getPosition()).toEqual(new Position(0, 0, 1, 2));
+                expect(components[1].getPosition()).toEqual(new Position(0, 1, 1, 1));
             });
 
             it("puts a second component next to the first with its preferred width if they overlap and there is room", function () {
@@ -47,8 +47,8 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 var layoutStrategy = new LayoutStrategy(gridDimensions, components);
                 layoutStrategy.execute();
 
-                expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 2));
-                expect(components[1].getPosition()).toEqual(new Position(0, 3, 2, 1));
+                expect(components[0].getPosition()).toEqual(new Position(0, 0, 1, 2));
+                expect(components[1].getPosition()).toEqual(new Position(0, 1, 2, 1));
 
             });
 
@@ -332,6 +332,20 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 expect(components[4].getPosition()).toEqual(new Position(3, 4, 1, 1));
                 expect(components[5].getPosition()).toEqual(new Position(0, 5, 5, 4));
             });
+
+            it("when there are two rows to fit", function() {
+                var components = [getAComponent(0,0,4,2), getAComponent(1,4,2,1),
+                    getAComponent(2,2,2,3),
+                    getAComponent(3,5,1,1)];
+
+                var layoutStrategy = new LayoutStrategy({width: 4, height: 5}, components);
+                layoutStrategy.execute();
+
+                expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 2));
+                expect(components[1].getPosition()).toEqual(new Position(2, 1, 2, 3));
+                expect(components[2].getPosition()).toEqual(new Position(1, 3, 1, 1));
+                expect(components[3].getPosition()).toEqual(new Position(3, 3, 1, 1));
+            });
         });
 
         describe("in cases where the components do not fit on the row however much we shuffle and squeeze", function () {
@@ -348,7 +362,7 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
             });
 
             it("puts a second component on a new row and after a third component if it overlaps the first and the third one is in the way", function () {
-                var components = [getAComponent(0, 0, 9, 2), getAComponent(0, 1, 2, 1, 2, 3, 1, 1), getAComponent(2, 1, 3, 2)];
+                var components = [getAComponent(0, 0, 9, 2,9,9,2,2), getAComponent(0, 1, 2, 1, 2, 3, 1, 1), getAComponent(2, 1, 3, 2)];
 
                 var layoutStrategy = new LayoutStrategy(gridDimensions, components);
                 layoutStrategy.execute();
@@ -368,7 +382,6 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 expect(components[1].getPosition()).toEqual(new Position(1, 0, 5, 1));
                 expect(components[2].getPosition()).toEqual(new Position(1, 5, 3, 1));
             });
-
 
         });
 

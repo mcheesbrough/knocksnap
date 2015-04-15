@@ -21,6 +21,16 @@ define(['jquery', 'knocksnap/models/position.model', 'knocksnap/models/Component
 
             }
         }
+
+        self.removeFromLayout = function (layout) {
+            layout.removeComponent(self);
+            self.deletePosition();
+        }
+
+        self.deletePosition = function () {
+            position = undefined;
+        }
+
         self.getPosition = function () {
             return position;
         }

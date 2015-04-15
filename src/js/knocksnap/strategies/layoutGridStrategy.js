@@ -11,14 +11,13 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
         self.execute = function () {
 
             // First pass, see if each component can go into its preferred slot...
-            if (tryPlacePreferred()) return;
+            if (tryPlacePreferred()) return layout;
             // Try and shuffle components into available space without shrinking
-            if (shuffleAlong()) return;
-            // Now try shrinking and shuffling
+            if (shuffleAlong()) return layout;
 
             // Didn't work, so let's try finding the next possible position for any that didn't fit, but don't move any existing components
-            if (tryFitUnplaced()) return;
-            return;
+            if (tryFitUnplaced()) return layout;
+
             throw "Layout strategy not implemented";
         }
 
@@ -43,10 +42,10 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                 if (!component.hasPosition()) {
                     // How much space do we need?
                     var leftShiftNeeded = layout.leftShiftNeededToFit(component);
-                    if (component.preferredPosition.left - leftShiftNeeded < 0) {
+/*                    if (component.preferredPosition.left - leftShiftNeeded < 0) {
                         allComponentsPlaced = false;
                         continue;
-                    };
+                    };*/
                     var positionToTry = component.preferredPosition;
                     var spaceToLeft = layout.gapToLeftOfPosition(positionToTry.top, positionToTry.left, positionToTry.height);
                     if (leftShiftNeeded <= spaceToLeft) {
@@ -59,7 +58,7 @@ define(['jquery', 'knockout', 'knocksnap/models/position.model', 'knocksnap/mode
                     var allComponentsToLeftShifted = true;
                     while (spaceToLeft < leftShiftNeeded && allComponentsToLeftShifted) {
                         var componentsToLeft = layout.firstComponentToLeft(positionToTry.top, positionToTry.left, positionToTry.height);
-
+                        if (!componentsToLeft || componentsToLeft.length == 0) break; // No more components to shuffle
                         allComponentsToLeftShifted = true;
                         for (var j = 0; j < componentsToLeft.length; j++) {
                             if (!shuffleComponentToLeft(componentsToLeft[j], spaceNeeded, possibleContraction)) {
