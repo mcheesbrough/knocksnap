@@ -383,6 +383,19 @@ define(['layoutGridStrategy', 'knocksnap/models/options.model', 'knocksnap/model
                 expect(components[2].getPosition()).toEqual(new Position(1, 5, 3, 1));
             });
 
+            it("when can't fit a component and are at the bttom of the grid then create a new row and wrap onto it", function () {
+                var components = [getAComponent(0,0,4,2,3,4,2,2), getAComponent(2,0,4,3,4,4,3,3),
+                    getAComponent(1,4,1,1), getAComponent(4,4,3,1,1,3,1,1)];
+
+                var layoutStrategy = new LayoutStrategy({width: 4, height: 5}, components);
+                layoutStrategy.execute();
+
+                expect(components[0].getPosition()).toEqual(new Position(0, 0, 3, 2));
+                expect(components[1].getPosition()).toEqual(new Position(2, 0, 4, 3));
+                expect(components[2].getPosition()).toEqual(new Position(1, 3, 1, 1));
+                expect(components[3].getPosition()).toEqual(new Position(5, 0, 3, 1));
+            });
+
         });
 
         function getAComponent(top, left, width, height, minWidth, maxWidth, minHeight, maxHeight) {

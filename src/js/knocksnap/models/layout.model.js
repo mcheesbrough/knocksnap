@@ -19,10 +19,15 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             return self.gridCells[0].length;
         }
 
+
+
         self.canPlaceAt = function(positionToTry) {
             if (!pointIsInGrid(positionToTry.left, positionToTry.top)) return false;
             if (positionToTry.left + positionToTry.width > self.gridCells.length) return false;
-            if (positionToTry.top + positionToTry.height > self.gridCells[0].length) return false;
+            if (positionToTry.top + positionToTry.height > self.gridCells[0].length) {
+                // Instead of saying cannot place we simply add enough rows
+                addRows(positionToTry.top + positionToTry.height - self.gridCells[0].length);
+            };
 
 
             for (var x = positionToTry.left; x < positionToTry.left + positionToTry.width; x++) {
@@ -184,6 +189,15 @@ define(['jquery', 'knockout', 'knocksnap/models/cell.model', 'knocksnap/models/p
             if (x > self.gridCells.length) return false;
             if (y > self.gridCells[0].length) return false;
             return true;
+        }
+
+        function addRows(rowsToAdd) {
+            for (var x = 0; x < self.gridCells.length; x++) {
+                for (var y = 0; y < rowsToAdd; y++) {
+                    self.gridCells[x].push(new Cell());
+                }
+                
+            }
         }
     }
 
